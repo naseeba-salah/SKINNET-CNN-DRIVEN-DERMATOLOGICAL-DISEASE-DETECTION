@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}SkinNet — AI Dermatology{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="noise-overlay"></div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="{{ url_for('index') }}">
+      <span class="brand-hex">⬡</span>
+      <span class="brand-name">Skin<em>Net</em></span>
+    </a>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{ url_for('index') }}"    class="nav-link {% if request.endpoint=='index' %}is-active{% endif %}">Home</a></li>
+      <li><a href="{{ url_for('diseases') }}" class="nav-link {% if request.endpoint=='diseases' %}is-active{% endif %}">Conditions</a></li>
+      <li><a href="{{ url_for('graphs') }}"   class="nav-link {% if request.endpoint=='graphs' %}is-active{% endif %}">Metrics</a></li>
+      <li><a href="{{ url_for('about') }}"    class="nav-link {% if request.endpoint=='about' %}is-active{% endif %}">About</a></li>
+    </ul>
+
+    <a href="{{ url_for('index') }}" class="nav-cta">Analyze Skin</a>
+    <button class="nav-burger" id="navBurger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- FLASH -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-wrap">
+  {% for cat, msg in messages %}
+  <div class="flash flash--{{ cat }}">
+    <i class="fas {% if cat=='error' %}fa-circle-xmark{% else %}fa-circle-check{% endif %}"></i>
+    <span>{{ msg }}</span>
+    <button onclick="this.parentElement.remove()" class="flash-x">✕</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-glow"></div>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand-col">
+        <div class="footer-logo"><span class="brand-hex">⬡</span> Skin<em>Net</em></div>
+        <p>AI-powered dermatological disease detection using deep learning, GradCAM & LIME explainability.</p>
+      </div>
+      <div>
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="{{ url_for('index') }}">Home</a></li>
+          <li><a href="{{ url_for('diseases') }}">Conditions</a></li>
+          <li><a href="{{ url_for('graphs') }}">Training Metrics</a></li>
+          <li><a href="{{ url_for('about') }}">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Dataset</h4>
+        <p class="footer-small">Trained on the <a href="https://www.kaggle.com/datasets/shubhamgoel27/dermnet" target="_blank">DermNet Kaggle Dataset</a> — 23 disease categories, 19K+ images.</p>
+        <h4 style="margin-top:1rem">Model</h4>
+        <p class="footer-small">MobileNetV3-Large · AdamW · Cosine Annealing · Label Smoothing</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-disclaimer">⚠️ For educational purposes only. Not a substitute for professional medical advice. Always consult a qualified dermatologist.</p>
+      <p class="footer-copy">© 2024 SkinNet · Built with PyTorch & Flask</p>
+    </div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

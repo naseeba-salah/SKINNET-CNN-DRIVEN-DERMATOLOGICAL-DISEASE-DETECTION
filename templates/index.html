@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% block title %}SkinNet — AI Skin Disease Detection{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-mesh"></div>
+  <div class="hero-orb hero-orb--1"></div>
+  <div class="hero-orb hero-orb--2"></div>
+  <div class="hero-orb hero-orb--3"></div>
+  <div class="wrap hero-wrap">
+    <div class="hero-eyebrow">
+      <span class="pulse-ring"></span>
+      AI Dermatology · {{ total_classes }} Disease Classes · GradCAM + LIME
+    </div>
+    <h1 class="hero-title">
+      Detect Skin Diseases<br>
+      <span class="title-teal">Intelligently.</span>
+    </h1>
+    <p class="hero-sub">
+      Upload a skin image and receive an AI-powered diagnosis in seconds — with GradCAM heatmaps,
+      LIME superpixel explanations, and a downloadable clinical PDF report.
+    </p>
+    <div class="hero-pills">
+      <span class="pill"><i class="fas fa-brain"></i> MobileNetV3-Large</span>
+      <span class="pill"><i class="fas fa-fire"></i> GradCAM</span>
+      <span class="pill"><i class="fas fa-puzzle-piece"></i> LIME</span>
+      <span class="pill"><i class="fas fa-file-pdf"></i> PDF Report</span>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll to analyze</span>
+    <i class="fas fa-chevron-down"></i>
+  </div>
+</section>
+
+<!-- UPLOAD SECTION -->
+<section class="upload-section" id="uploadSection">
+  <div class="wrap upload-wrap">
+
+    <div class="section-label">ANALYZE NOW</div>
+    <h2 class="section-title">Upload a Skin Image</h2>
+    <p class="section-sub">Accepted: JPG · PNG · BMP · WEBP · Max 16 MB</p>
+
+    <div class="upload-card" id="uploadCard">
+      <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+
+        <!-- DROP ZONE -->
+        <div class="drop-zone" id="dropZone">
+          <div class="dz-inner" id="dzInner">
+            <div class="dz-icon-wrap">
+              <div class="dz-hex-ring"></div>
+              <i class="fas fa-cloud-arrow-up dz-icon"></i>
+            </div>
+            <p class="dz-primary">Drag & drop your image here</p>
+            <p class="dz-or">— or choose an option —</p>
+
+            <!-- Action buttons -->
+            <div class="dz-actions">
+              <label for="fileInput" class="dz-btn dz-btn--file">
+                <i class="fas fa-folder-open"></i> Browse Files
+              </label>
+              <button type="button" class="dz-btn dz-btn--camera" id="cameraBtn">
+                <i class="fas fa-camera"></i> Take Photo
+              </button>
+            </div>
+
+            <!-- Hidden file inputs -->
+            <input type="file" id="fileInput"   name="file" accept="image/*"           class="hidden-input">
+            <input type="file" id="cameraInput" name="file" accept="image/*" capture="environment" class="hidden-input">
+          </div>
+
+          <!-- Preview -->
+          <div class="dz-preview hidden" id="dzPreview">
+            <img id="previewImg" src="" alt="Preview">
+            <div class="preview-overlay">
+              <button type="button" class="preview-change" id="changeBtn">
+                <i class="fas fa-arrows-rotate"></i> Change Image
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMERA MODAL (for desktop) -->
+        <div class="camera-modal hidden" id="cameraModal">
+          <div class="camera-modal-inner">
+            <div class="camera-modal-header">
+              <h3><i class="fas fa-camera"></i> Camera Capture</h3>
+              <button type="button" id="closeCameraBtn" class="camera-close">✕</button>
+            </div>
+            <div class="camera-viewport">
+              <video id="cameraVideo" autoplay playsinline></video>
+              <div class="camera-frame"></div>
+            </div>
+            <div class="camera-controls">
+              <button type="button" id="captureBtn" class="btn-capture">
+                <span class="capture-ring"></span>
+              </button>
+            </div>
+            <canvas id="captureCanvas" class="hidden"></canvas>
+          </div>
+        </div>
+
+        <div class="upload-submit">
+          <button type="submit" class="btn-analyze" id="analyzeBtn" disabled>
+            <span class="btn-analyze-inner">
+              <i class="fas fa-microscope"></i>
+              <span class="btn-text">Analyze Image</span>
+            </span>
+            <span class="btn-loading hidden">
+              <i class="fas fa-spinner fa-spin"></i> Analyzing…
+            </span>
+          </button>
+          <p class="upload-hint">Analysis takes 3–8 seconds including LIME generation</p>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="wrap">
+    <div class="section-label">PROCESS</div>
+    <h2 class="section-title">How It Works</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon-wrap"><i class="fas fa-upload"></i></div>
+        <h3>Upload or Capture</h3>
+        <p>Drag & drop a photo, browse your files, or use your device camera directly in the browser.</p>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon-wrap"><i class="fas fa-network-wired"></i></div>
+        <h3>Deep CNN Analysis</h3>
+        <p>MobileNetV3-Large uses depthwise separable convolutions and squeeze-and-excitation blocks for fast, precise classification.</p>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon-wrap"><i class="fas fa-eye"></i></div>
+        <h3>Dual Explainability</h3>
+        <p>GradCAM visualizes gradient attention maps. LIME highlights superpixel regions that drove the decision.</p>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-icon-wrap"><i class="fas fa-file-medical"></i></div>
+        <h3>Clinical Report</h3>
+        <p>Download a professional PDF report with diagnosis, confidence scores, and both AI visualizations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BENTO GRID -->
+<section class="bento-section">
+  <div class="wrap">
+    <div class="section-label">FEATURES</div>
+    <h2 class="section-title">What Makes SkinNet Different</h2>
+
+    <div class="bento-grid">
+      <div class="bento bento--wide bento--gradcam">
+        <div class="bento-tag">EXPLAINABILITY</div>
+        <h3>GradCAM + LIME Side by Side</h3>
+        <p>Two independent AI explainability methods visualize exactly which skin regions drove the diagnosis — building trust through transparency.</p>
+        <div class="bento-icons">
+          <span><i class="fas fa-fire-flame-curved"></i> GradCAM Heatmap</span>
+          <span><i class="fas fa-puzzle-piece"></i> LIME Superpixels</span>
+        </div>
+      </div>
+
+      <div class="bento bento--pdf">
+        <div class="bento-tag">EXPORT</div>
+        <h3>PDF Report</h3>
+        <p>One-click professional report to share with your dermatologist.</p>
+        <i class="fas fa-file-pdf bento-bg-icon"></i>
+      </div>
+
+      <div class="bento bento--camera">
+        <div class="bento-tag">MOBILE</div>
+        <h3>Camera Capture</h3>
+        <p>Tap "Take Photo" to use your phone camera directly. No saving needed.</p>
+        <i class="fas fa-camera bento-bg-icon"></i>
+      </div>
+
+      <div class="bento bento--classes">
+        <div class="bento-tag">COVERAGE</div>
+        <h3>{{ total_classes }} Conditions</h3>
+        <p>From acne to melanoma, eczema to lupus — comprehensive dermatological coverage.</p>
+        <div class="bento-number">23</div>
+      </div>
+
+      <div class="bento bento--model bento--wide">
+        <div class="bento-tag">ARCHITECTURE</div>
+        <h3>MobileNetV3-Large · Fine-Tuned on DermNet</h3>
+        <p>ImageNet-pretrained MobileNetV3-Large with depthwise separable convolutions, trained with AdamW, cosine LR annealing, label smoothing, and a frozen backbone warm-up phase on 15.5K+ dermatological images.</p>
+        <div class="arch-chips">
+          <span>MobileNetV3</span><span>AdamW</span><span>Cosine LR</span><span>Label Smooth</span><span>GradCAM Hooks</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONDITIONS MARQUEE -->
+<section class="marquee-section">
+  <div class="section-label center">DETECTABLE CONDITIONS</div>
+  <div class="marquee-track">
+    <div class="marquee-inner">
+      {% set diseases = ["🔴 Acne & Rosacea","⚠️ Basal Cell Carcinoma","🌿 Atopic Dermatitis","💧 Bullous Disease","🦠 Cellulitis","🧴 Eczema","💊 Drug Eruptions","💇 Alopecia","🔬 Herpes HPV","☀️ Pigmentation","🦋 Lupus","🚨 Melanoma","💅 Nail Fungus","🌱 Contact Dermatitis","🔖 Psoriasis","🐛 Scabies","🟤 Seborrheic Keratoses","🏥 Systemic Disease","🍄 Tinea Ringworm","🔴 Urticaria","🔵 Vascular Tumors","💜 Vasculitis","🦠 Warts"] %}
+      {% for d in diseases %}<span class="marquee-item">{{ d }}</span>{% endfor %}
+      {% for d in diseases %}<span class="marquee-item">{{ d }}</span>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

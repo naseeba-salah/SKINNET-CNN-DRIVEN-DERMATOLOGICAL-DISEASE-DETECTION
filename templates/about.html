@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}SkinNet — About{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="page-hero-orb"></div>
+  <div class="wrap">
+    <div class="section-label center">ABOUT</div>
+    <h1 class="page-hero-title">About SkinNet</h1>
+    <p class="page-hero-sub">MobileNetV3-Large · GradCAM · LIME · PDF Reports · 23 Disease Classes</p>
+  </div>
+</div>
+
+<div class="about-page">
+  <div class="wrap">
+
+    <div class="about-grid">
+
+      <div class="about-card">
+        <div class="about-card-icon">🧠</div>
+        <h2>Project Overview</h2>
+        <p>SkinNet classifies 23 dermatological conditions from photographs using a MobileNetV3-Large CNN fine-tuned on the DermNet dataset. It provides two independent AI explainability systems — GradCAM and LIME — and generates downloadable PDF clinical reports.</p>
+        <p>Unlike black-box systems, SkinNet shows <em>why</em> it made each classification through visual explanations that clinicians and patients can understand and trust.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">🏗️</div>
+        <h2>Model Architecture</h2>
+        <div class="arch-rows">
+          <div class="arch-row"><span>Backbone</span><span>MobileNetV3-Large (ImageNet pretrained)</span></div>
+          <div class="arch-row"><span>Input</span><span>224 × 224 × 3 RGB</span></div>
+          <div class="arch-row"><span>Feature map</span><span>960 × 7 × 7 after backbone</span></div>
+          <div class="arch-row"><span>Pooling</span><span>Adaptive Average Pool → 960-d vector</span></div>
+          <div class="arch-row"><span>Classifier</span><span>Linear(960→512) · Hardswish · Linear(512→23)</span></div>
+          <div class="arch-row"><span>Dropout</span><span>0.3 (pool) + 0.2 (head)</span></div>
+          <div class="arch-row"><span>Loss</span><span>CrossEntropy + Label Smoothing (0.1)</span></div>
+          <div class="arch-row"><span>Optimizer</span><span>AdamW (lr=1e-3, weight_decay=1e-4)</span></div>
+          <div class="arch-row"><span>Scheduler</span><span>Cosine Annealing LR</span></div>
+          <div class="arch-row"><span>Freeze phase</span><span>5 epochs backbone frozen (head warm-up)</span></div>
+          <div class="arch-row"><span>Early stopping</span><span>patience=8 epochs</span></div>
+          <div class="arch-row"><span>Parameters</span><span>~5.4 M total</span></div>
+          <div class="arch-row"><span>Output</span><span>23-class Softmax</span></div>
+        </div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">⚡</div>
+        <h2>Why MobileNetV3-Large?</h2>
+        <p>MobileNetV3-Large uses depthwise separable convolutions, squeeze-and-excitation blocks, and the h-swish activation — specifically optimised for deployment on CPUs and mobile hardware without sacrificing accuracy.</p>
+        <div class="compare-table">
+          <div class="ct-header"><span>Model</span><span>Params</span><span>GFLOPs</span></div>
+          <div class="ct-row ct-row--active"><span>MobileNetV3-Large ✓</span><span>5.4 M</span><span>0.22</span></div>
+          <div class="ct-row ct-row--dim"><span>EfficientNet-B0</span><span>5.3 M</span><span>0.39</span></div>
+          <div class="ct-row ct-row--dim"><span>ResNet50</span><span>25 M</span><span>4.1</span></div>
+        </div>
+        <p>On a CPU, MobileNetV3 is <strong>~18× faster per epoch</strong> than ResNet50 while achieving comparable accuracy on DermNet.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">🔥</div>
+        <h2>GradCAM Explainability</h2>
+        <p>Gradient-weighted Class Activation Mapping computes the gradient of the predicted class score with respect to the final MobileNetV3 inverted-residual feature maps, producing a spatial heatmap of which skin regions the network attended to.</p>
+        <div class="formula-box">
+          <code>L<sup>c</sup><sub>GradCAM</sub> = ReLU( &Sigma;<sub>k</sub> &alpha;<sup>c</sup><sub>k</sub> &middot; A<sup>k</sup> )</code>
+        </div>
+        <p>Single forward + backward pass. Produces pixel-level spatial attention overlaid on the original image in real time.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">🧩</div>
+        <h2>LIME Explainability</h2>
+        <p>Local Interpretable Model-Agnostic Explanations uses SLIC superpixel segmentation and random masking to discover which image regions drove the prediction. A local Ridge regression is fitted to the CNN's responses on 150 perturbed samples.</p>
+        <div class="formula-box">
+          <code>&xi;(x) = argmin<sub>g&isin;G</sub> L(f, g, &pi;<sub>x</sub>) + &Omega;(g)</code>
+        </div>
+        <p>150 perturbation samples · SLIC 60 superpixels · Ridge(&alpha;=1) · Top-10 positive regions highlighted.</p>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">📁</div>
+        <h2>DermNet Dataset</h2>
+        <p>Trained on the <a href="https://www.kaggle.com/datasets/shubhamgoel27/dermnet" target="_blank">DermNet Kaggle dataset</a> — curated clinical images across 23 disease categories sourced from the DermNet NZ image library.</p>
+        <div class="stat-row">
+          <div class="about-stat"><span class="about-stat-val">23</span><span>Classes</span></div>
+          <div class="about-stat"><span class="about-stat-val">15.5K</span><span>Train</span></div>
+          <div class="about-stat"><span class="about-stat-val">4K</span><span>Val</span></div>
+          <div class="about-stat"><span class="about-stat-val">67.9%</span><span>Val Acc</span></div>
+        </div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">🛠️</div>
+        <h2>Technology Stack</h2>
+        <div class="tech-chips">
+          <span class="tech-chip" style="background:#ee4c2c">PyTorch 2.x</span>
+          <span class="tech-chip" style="background:#1a73e8">MobileNetV3</span>
+          <span class="tech-chip" style="background:#000">Flask</span>
+          <span class="tech-chip" style="background:#5c3ee8">OpenCV</span>
+          <span class="tech-chip" style="background:#11557c">Matplotlib</span>
+          <span class="tech-chip" style="background:#f89939">Scikit-learn</span>
+          <span class="tech-chip" style="background:#2d7bb8">Scikit-image</span>
+          <span class="tech-chip" style="background:#c12127">ReportLab</span>
+          <span class="tech-chip" style="background:#4dabcf">NumPy</span>
+        </div>
+        <h4 style="margin-top:1.2rem;font-size:.88rem;color:var(--teal)">Training command</h4>
+        <div class="formula-box" style="text-align:left;padding:10px 14px">
+          <code style="font-size:.78rem">python train.py --data_dir data/dermnet --epochs 30</code>
+        </div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card-icon">📄</div>
+        <h2>PDF Report</h2>
+        <p>After every analysis, SkinNet generates a professional A4 PDF report containing:</p>
+        <ul class="symptom-list" style="margin-top:8px">
+          <li><i class="fas fa-circle-dot"></i> Diagnosis name, confidence score and severity badge</li>
+          <li><i class="fas fa-circle-dot"></i> Clinical description, symptoms and treatment notes</li>
+          <li><i class="fas fa-circle-dot"></i> Top-5 differential prediction table</li>
+          <li><i class="fas fa-circle-dot"></i> GradCAM + LIME visualisations side by side</li>
+          <li><i class="fas fa-circle-dot"></i> Confidence probability chart</li>
+          <li><i class="fas fa-circle-dot"></i> Medical disclaimer</li>
+        </ul>
+        <p style="margin-top:10px">Pre-generated at analysis time — one click to download.</p>
+      </div>
+
+    </div>
+
+    <div class="about-disclaimer-box">
+      <i class="fas fa-triangle-exclamation"></i>
+      <div>
+        <strong>Important Medical Disclaimer</strong>
+        <p>SkinNet is developed for educational and research purposes only. It is not a certified medical device and must not replace professional medical advice, diagnosis, or treatment. Always consult a qualified dermatologist or licensed healthcare provider for any skin concerns. A 67.9% validation accuracy means the model is incorrect approximately 1 in 3 cases — always verify with a professional.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

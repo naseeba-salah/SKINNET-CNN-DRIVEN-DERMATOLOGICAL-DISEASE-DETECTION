@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}SkinNet — Condition Library{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="page-hero-orb"></div>
+  <div class="wrap">
+    <div class="section-label center">LIBRARY</div>
+    <h1 class="page-hero-title">Condition Library</h1>
+    <p class="page-hero-sub">Browse all 23 dermatological conditions SkinNet can detect and classify</p>
+  </div>
+</div>
+
+<div class="diseases-page">
+  <div class="wrap">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="diseaseSearch" placeholder="Search conditions…"
+               class="search-input" onkeyup="filterDiseases()">
+      </div>
+      <div class="filter-pills">
+        <button class="fpill active" data-sev="all"     onclick="filterBySeverity('all',this)">All</button>
+        <button class="fpill fpill--danger"  data-sev="danger"   onclick="filterBySeverity('danger',this)">🚨 High</button>
+        <button class="fpill fpill--warning" data-sev="warning"  onclick="filterBySeverity('warning',this)">⚠️ Moderate</button>
+        <button class="fpill fpill--info"    data-sev="info"     onclick="filterBySeverity('info',this)">ℹ️ Low-Mod</button>
+        <button class="fpill fpill--success" data-sev="success"  onclick="filterBySeverity('success',this)">✅ Mild</button>
+      </div>
+    </div>
+
+    <!-- DISEASE CARDS -->
+    <div class="disease-grid" id="diseaseGrid">
+      {% for d in diseases %}
+      <div class="dcard" data-severity="{{ d.get('severity_class','info') }}" data-name="{{ d.name|lower }}">
+        <div class="dcard-stripe stripe-{{ d.get('severity_class','info') }}"></div>
+        <div class="dcard-header">
+          <span class="dcard-icon">{{ d.get('icon','🔬') }}</span>
+          <span class="dcard-sev sev-{{ d.get('severity_class','info') }}">{{ d.get('severity','') }}</span>
+        </div>
+        <h3 class="dcard-name">{{ d.name }}</h3>
+        <p class="dcard-desc">{{ d.get('description','')[:110] }}{% if d.get('description','') | length > 110 %}…{% endif %}</p>
+        <div class="dcard-symptoms">
+          {% for s in d.get('symptoms',[])[:3] %}<span class="sym-chip">{{ s }}</span>{% endfor %}
+        </div>
+        <div class="dcard-urgency urgency-text-{{ d.get('severity_class','info') }}">
+          <i class="fas fa-clock"></i> {{ d.get('urgency','') }}
+        </div>
+        <div class="dcard-foot">
+          <a href="{{ url_for('index') }}#uploadSection" class="dcard-btn">
+            <i class="fas fa-microscope"></i> Analyze
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div id="noResults" class="no-results hidden">
+      <i class="fas fa-magnifying-glass"></i>
+      <p>No conditions match your search.</p>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

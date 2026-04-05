@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}SkinNet — Diagnosis Result{% endblock %}
+{% block content %}
+
+<div class="result-page">
+  <div class="wrap">
+
+    <!-- RESULT HERO BANNER -->
+    <div class="result-banner sev-{{ disease_info.get('severity_class','info') }}">
+      <div class="result-banner-left">
+        <div class="result-icon">{{ disease_info.get('icon','🔬') }}</div>
+        <div class="result-meta">
+          <div class="result-severity-tag sev-tag-{{ disease_info.get('severity_class','info') }}">
+            {{ disease_info.get('severity','Unknown') }} Severity
+          </div>
+          <h1 class="result-disease">{{ disease_name }}</h1>
+          <p class="result-desc">{{ disease_info.get('description','') }}</p>
+        </div>
+      </div>
+      <div class="result-confidence-wrap">
+        <div class="conf-ring-svg">
+          <svg viewBox="0 0 100 100" width="120" height="120">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#1a2332" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none"
+              stroke="{% if confidence > 80 %}#00e5c7{% elif confidence > 50 %}#f5a623{% else %}#ef4444{% endif %}"
+              stroke-width="8"
+              stroke-dasharray="{{ (confidence / 100 * 263.9)|round(1) }} 263.9"
+              stroke-dashoffset="0"
+              stroke-linecap="round"
+              transform="rotate(-90 50 50)"/>
+          </svg>
+          <div class="conf-label">
+            <span class="conf-val">{{ confidence|round(1) }}%</span>
+            <span class="conf-sub">Confidence</span>
+          </div>
+        </div>
+        <a href="{{ url_for('download_report', report_id=report_id) }}"
+           class="btn-pdf" download>
+          <i class="fas fa-file-pdf"></i>
+          Download Report
+        </a>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="result-grid">
+
+      <!-- LEFT COLUMN -->
+      <div class="result-col result-col--left">
+
+        <!-- Uploaded Image -->
+        <div class="rcard">
+          <div class="rcard-head"><i class="fas fa-image"></i> Uploaded Image</div>
+          <div class="rcard-body">
+            <img src="{{ url_for('uploaded_file', filename=filename) }}"
+                 alt="Uploaded skin image" class="result-img">
+          </div>
+        </div>
+
+        <!-- Probability Chart -->
+        <div class="rcard">
+          <div class="rcard-head"><i class="fas fa-chart-bar"></i> Prediction Confidence</div>
+          <div class="rcard-body">
+            <img src="data:image/png;base64,{{ probchart_b64 }}" alt="Probability chart" class="result-img">
+          </div>
+        </div>
+
+        <!-- Top 5 -->
+        <div class="rcard">
+          <div class="rcard-head"><i class="fas fa-trophy"></i> Top 5 Predictions</div>
+          <div class="rcard-body">
+            {% for item in top5 %}
+            <div class="top5-row {% if loop.first %}top5-row--first{% endif %}">
+              <span class="top5-rank">{{ loop.index }}</span>
+              <span class="top5-icon">{{ item.icon }}</span>
+              <div class="top5-info">
+                <div class="top5-name">{{ item.name }}</div>
+                <div class="top5-track">
+                  <div class="top5-fill" style="width:{{ item.prob|round(1) }}%"></div>
+                </div>
+              </div>
+              <span class="top5-pct">{{ item.prob|round(1) }}%</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="result-col result-col--right">
+
+        <!-- Clinical Info -->
+        <div class="rcard rcard--clinical">
+          <div class="rcard-head"><i class="fas fa-notes-medical"></i> Clinical Information</div>
+          <div class="rcard-body">
+            <div class="clinical-grid">
+              <div class="clinical-block">
+                <h4><i class="fas fa-list-check"></i> Common Symptoms</h4>
+                <ul class="symptom-list">
+                  {% for s in disease_info.get('symptoms',[]) %}
+                  <li><i class="fas fa-circle-dot"></i> {{ s }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="clinical-block">
+                <h4><i class="fas fa-pills"></i> Treatment</h4>
+                <p>{{ disease_info.get('treatment','Consult a dermatologist.') }}</p>
+              </div>
+            </div>
+            <div class="urgency-box urgency-{{ disease_info.get('severity_class','info') }}">
+              <i class="fas fa-clock"></i>
+              <div>
+                <strong>Urgency:</strong> {{ disease_info.get('urgency','Please consult a healthcare provider.') }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GradCAM -->
+        <div class="rcard rcard--gradcam">
+          <div class="rcard-head">
+            <i class="fas fa-fire-flame-curved"></i> GradCAM
+            <span class="rcard-badge rcard-badge--teal">Gradient Attention</span>
+          </div>
+          <div class="rcard-meta">Highlights regions the CNN attended to via gradient backpropagation through the last convolutional layer.</div>
+          <div class="rcard-body">
+            <img src="data:image/png;base64,{{ gradcam_b64 }}" alt="GradCAM" class="result-img">
+          </div>
+        </div>
+
+        <!-- LIME -->
+        <div class="rcard rcard--lime">
+          <div class="rcard-head">
+            <i class="fas fa-puzzle-piece"></i> LIME
+            <span class="rcard-badge rcard-badge--green">Superpixel Explanation</span>
+          </div>
+          <div class="rcard-meta">Local Interpretable Model-Agnostic Explanations — shows which image superpixels most influenced the prediction via local linear approximation.</div>
+          <div class="rcard-body">
+            <img src="data:image/png;base64,{{ lime_b64 }}" alt="LIME" class="result-img">
+          </div>
+        </div>
+
+        <!-- Explainability Comparison -->
+        <div class="rcard rcard--compare">
+          <div class="rcard-head"><i class="fas fa-scale-balanced"></i> GradCAM vs LIME</div>
+          <div class="rcard-body">
+            <div class="compare-grid">
+              <div class="compare-col">
+                <h4><i class="fas fa-fire-flame-curved" style="color:#00e5c7"></i> GradCAM</h4>
+                <ul>
+                  <li>Gradient-based</li>
+                  <li>Single forward+backward pass</li>
+                  <li>Highlights activation regions</li>
+                  <li>Model-specific, very fast</li>
+                </ul>
+              </div>
+              <div class="compare-divider"></div>
+              <div class="compare-col">
+                <h4><i class="fas fa-puzzle-piece" style="color:#39d353"></i> LIME</h4>
+                <ul>
+                  <li>Perturbation-based</li>
+                  <li>150 masked samples + Ridge fit</li>
+                  <li>Highlights superpixel regions</li>
+                  <li>Model-agnostic, interpretable</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="result-disclaimer">
+      <i class="fas fa-triangle-exclamation"></i>
+      <p><strong>Medical Disclaimer:</strong> This AI analysis is for educational and informational purposes only. It is <em>not</em> a medical diagnosis. Always consult a qualified dermatologist or licensed healthcare professional for diagnosis and treatment decisions.</p>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="result-actions">
+      <a href="{{ url_for('index') }}" class="btn-primary">
+        <i class="fas fa-arrow-left"></i> Analyze Another
+      </a>
+      <a href="{{ url_for('download_report', report_id=report_id) }}" class="btn-pdf-lg" download>
+        <i class="fas fa-file-pdf"></i> Download PDF Report
+      </a>
+      <a href="{{ url_for('diseases') }}" class="btn-outline">
+        <i class="fas fa-notes-medical"></i> Disease Library
+      </a>
+      <button onclick="window.print()" class="btn-outline">
+        <i class="fas fa-print"></i> Print
+      </button>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

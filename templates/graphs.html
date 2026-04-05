@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}SkinNet — Training Metrics{% endblock %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="page-hero-orb"></div>
+  <div class="wrap">
+    <div class="section-label center">TRAINING</div>
+    <h1 class="page-hero-title">Training Metrics</h1>
+    <p class="page-hero-sub">Loss curves, accuracy plots, confusion matrices, and GradCAM samples generated during model training</p>
+  </div>
+</div>
+
+<div class="graphs-page">
+  <div class="wrap">
+    {% if graph_files %}
+    <div class="graphs-grid">
+      {% for gf in graph_files %}
+      <div class="graph-card">
+        <div class="graph-card-label">{{ gf.replace('_',' ').replace('.png','').title() }}</div>
+        <img src="{{ url_for('serve_graph', filename=gf) }}" alt="{{ gf }}"
+             class="graph-img" loading="lazy" onclick="openLightbox(this.src)">
+        <a href="{{ url_for('serve_graph', filename=gf) }}" download class="graph-dl-btn">
+          <i class="fas fa-download"></i> Download
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h2>No Training Graphs Yet</h2>
+      <p>Run the training script to generate performance metrics:</p>
+      <div class="code-block">
+        <code>python train.py --data_dir data/dermnet --epochs 50 --batch_size 32</code>
+      </div>
+      <div class="graph-expect-grid">
+        <div class="graph-expect-item"><i class="fas fa-chart-line" style="color:#00e5c7"></i> Loss Curve (Train vs Val)</div>
+        <div class="graph-expect-item"><i class="fas fa-chart-area" style="color:#39d353"></i> Accuracy Curve</div>
+        <div class="graph-expect-item"><i class="fas fa-route" style="color:#a78bfa"></i> LR Schedule</div>
+        <div class="graph-expect-item"><i class="fas fa-th" style="color:#f5a623"></i> Confusion Matrix</div>
+        <div class="graph-expect-item"><i class="fas fa-fire" style="color:#ef4444"></i> GradCAM Samples</div>
+        <div class="graph-expect-item"><i class="fas fa-chart-bar" style="color:#06b6d4"></i> Class Distribution</div>
+        <div class="graph-expect-item"><i class="fas fa-table-cells" style="color:#8b5cf6"></i> Training Dashboard</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+{% endblock %}
